@@ -15,10 +15,10 @@ class BecaController extends Controller
     protected $datos      		= Array();
     protected $codigo  			= 200;
 
-    public function lista(Request $Request)
+    public function lista(Request $request)
     {
         try {
-            $datos = Beca::where('estado',0)->get();
+            $datos = Beca::where('estado',1)->get();
             $this->codigo  = 200;
             $this->resultado       = true;
             $this->mensaje      = 'Datos consultados correctamente';
@@ -37,6 +37,87 @@ class BecaController extends Controller
         }
     }
 
+    public function eliminar(Request $request)
+    {
+        try {
+            $datos = Beca::find($request->input('id'));
+            $datos->delete();
+            $this->codigo       = 200;
+            $this->resultado    = true;
+            $this->mensaje      = 'Beca eliminada correctamente';
+            $this->datos        = $datos;
+            \Session::flash('message','Beca eliminada correctamente');
+        } catch (Exception $e) {
+            $this->codigo  = 200;
+            $this->resultado       = false;
+            $this->mensaje      = env('APP_DEBUG') ? $e->getmensaje() : $this->mensaje;
+        } finally {
+            $respuesta = [
+                'resultado'    =>  $this->resultado,
+                'mensaje'   =>  $this->mensaje,
+                'datos'   =>  $this->datos
+            ];
+            return redirect()->back();
+            //return response()->json($respuesta, $this->codigo);
+        }
+    }
+
+    public function selecionar(Request $request)
+    {
+        try {
+            $solicitantes       = Solicitud::where('id_beca',$request->input('id_beca'))->get();
+            $id_beca            = $request->input('id_beca');
+
+            $datos = Beca::find($request->input('id_beca'));
+            $datos->ganador = $request->input('id_solicitante');
+            $datos->save();
+            $this->codigo       = 200;
+            $this->resultado    = true;
+            $this->mensaje      = 'Beca selecionada correctamente';
+            $this->datos        = $datos;
+            \Session::flash('message','Beca selecionada correctamente');
+        } catch (Exception $e) {
+            $this->codigo  = 200;
+            $this->resultado       = false;
+            $this->mensaje      = env('APP_DEBUG') ? $e->getmensaje() : $this->mensaje;
+        } finally {
+            $respuesta = [
+                'resultado'    =>  $this->resultado,
+                'mensaje'   =>  $this->mensaje,
+                'datos'   =>  $this->datos
+            ];
+            //return redirect()->back();
+            return view('solicitantes',compact('solicitantes','id_beca'));
+            //return response()->json($respuesta, $this->codigo);
+        }
+    }
+
+    public function finalizar(Request $request)
+    {
+        try {
+            $datos = Beca::find($request->input('id'));
+            $datos->estado      = 2;
+            $datos->save();
+            $this->codigo       = 200;
+            $this->resultado    = true;
+            $this->mensaje      = 'Beca eliminada correctamente';
+            $this->datos        = $datos;
+            \Session::flash('message','Beca eliminada correctamente');
+        } catch (Exception $e) {
+            $this->codigo  = 200;
+            $this->resultado       = false;
+            $this->mensaje      = env('APP_DEBUG') ? $e->getmensaje() : $this->mensaje;
+        } finally {
+            $respuesta = [
+                'resultado'    =>  $this->resultado,
+                'mensaje'   =>  $this->mensaje,
+                'datos'   =>  $this->datos
+            ];
+            return redirect()->back();
+            //return response()->json($respuesta, $this->codigo);
+        }
+    }
+
     public function crear(Request $request)
     {
         try {
@@ -52,8 +133,9 @@ class BecaController extends Controller
 			$datos->save();
             $this->codigo  		= 200;
             $this->resultado    = true;
-            $this->mensaje      = 'Datos consultados correctamente';
+            $this->mensaje      = 'Beca creada correctamente';
             $this->datos        = $datos;
+            \Session::flash('message','Beca creada correctamente');
         } catch (Exception $e) {
             $this->codigo  = 200;
             $this->resultado       = false;
@@ -64,7 +146,8 @@ class BecaController extends Controller
                 'mensaje'   =>  $this->mensaje,
                 'datos'   =>  $this->datos
             ];
-            return response()->json($respuesta, $this->codigo);
+            return redirect()->back();
+            //return response()->json($respuesta, $this->codigo);
         }
     }
 
@@ -82,6 +165,9 @@ class BecaController extends Controller
             $datos->comentario       = $request->input('comentario');
             $datos->fecha_nacimiento = $request->input('fecha_nacimiento');
             $datos->save();
+            $beca = Beca::where('id',$datos->id_beca)->first();
+            $beca->postulantes = $beca->postulantes + 1;
+            $beca->save();
             $this->codigo  		= 200;
             $this->resultado    = true;
             $this->mensaje      = 'Datos consultados correctamente';
@@ -100,10 +186,11 @@ class BecaController extends Controller
         }
     }
 
-    public function listaSolicitantes(Request $Request)
+    public function listaSolicitantes(Request $request)
     {
         try {
-            $datos = Solicitud::where('id_beca',$request->input('id_beca'))->get();
+            $solicitantes       = Solicitud::where('id_beca',$request->input('id'))->get();
+            $id_beca            = $request->input('id');
             $this->codigo       = 200;
             $this->resultado    = true;
             $this->mensaje      = 'Datos consultados correctamente';
@@ -118,7 +205,8 @@ class BecaController extends Controller
                 'mensaje'   =>  $this->mensaje,
                 'datos'   =>  $this->datos
             ];
-            return response()->json($respuesta, $this->codigo);
+            //return response()->json($respuesta, $this->codigo);
+            return view('solicitantes',compact('solicitantes','id_beca'));
         }
     }
 

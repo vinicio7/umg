@@ -1,8 +1,15 @@
 <?php
     use App\Solicitud;
     use App\Beca;
-    $records = Beca::Paginate(5);
+    $beca     = Beca::where('id',$id_beca)->first();
+    $records  = Solicitud::where('id_beca',$id_beca)->Paginate(5);
     $contador = 1;
+    if ($beca->ganador == 0) {
+        $llave = 0;
+    } else {
+        $llave = 1;
+    }
+    
 ?>
 @extends('layouts.app')
 @section('content')
@@ -117,7 +124,7 @@
             <div class="modal-content" style="padding: 20px;">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">Crear beca</h4>
+                    <h4 class="modal-title" id="myModalLabel">Selecionar beneficiario</h4>
                 </div>
                 <form class="form-horizontal" action="{{url('api/crear/beca')}}" method="post" data-toggle="validator">
                 <div class="modal-body">
@@ -157,11 +164,12 @@
     <div class="row">
         <div class="">
             <div class="panel panel-default" style="padding-left: 50px;padding-right: 50px;">
-                <div class="panel-heading">Lista de becas</div><br>
-
-                <button type="button" class="btn btn-primary bnt-rounded" data-toggle="modal" data-target="#myModal2">
-                    <i class="fa fa-plus"></i> + Crear Beca
-                </button>
+                <div class="panel-heading">Lista de solicitantes - {{ $beca->nombre }}</div><br>
+                <form class="form-horizontal" action="{{ url('/home') }}" method="get" data-toggle="validator">
+                    <button type="submit" class="btn btn-warning bnt-rounded">
+                        <i class="fa fa-plus"></i> <- Regresar
+                    </button>
+                </form>
                 @if(Session::has('message'))
                     <div class="alert alert-dismissible alert-success" class="col-md-10">
                         <button type="button" class="close" data-dismiss="alert">×</button>
@@ -177,61 +185,40 @@
                         <!-- <thead> -->
                             <tr class="header">
                                 <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">#</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Estado</th>
                                 <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Nombre</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Descripcion</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Ubicacion</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Fecha inicio</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Fecha fin</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Postulantes</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Ganador</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Postulantes</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Finalizar</th>
-                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Eliminar</th>
+                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Identificacion</th>
+                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Telefono</th>
+                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Email</th>
+                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Nombre padre</th>
+                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Nombre madre</th>
+                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Comentario</th>
+                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Fecha nacimiento</th>
+                                <th style="margin-left: 10px;padding-left: 10px;margin-right: 10px;padding-right: 10px;">Beneficiar</th>
                             </tr>
                         <!-- </thead> -->
                         <tbody>
-                            @foreach($records as $index => $item)
-                            <?php
-                                $nombre_ganador = "";
-                                if ($item->ganador == 0) {
-                                    $nombre_ganador = "Sin selecionar";
-                                } else {
-                                    $buscar = Solicitud::where('id',$item->ganador)->first();
-                                    $nombre_ganador = $buscar->nombre;
-                                }
-                            ?>
+                            @foreach($solicitantes as $index => $item)
                             <tr>    
                                 <td>{{ $index + $records->firstItem() }}</td>
-                                @if($item->estado == 1)
-                                    <td>Vigente</td>
-                                @else
-                                    <td>Vencida</td>
-                                @endif
                                 <td>{{ $item->nombre }}</td>
-                                <td>{{ $item->descripcion }}</td>
-                                <td>{{ $item->ubicacion }}</td>
-                                <td>{{ $item->fecha_inicio }}</td>
-                                <td>{{ $item->fecha_fin }}</td>
-                                <td>{{ $item->postulantes }}</td>
-                                <td>{{ $nombre_ganador }}</td>
+                                <td>{{ $item->identificacion }}</td>
+                                <td>{{ $item->telefono }}</td>
+                                <td>{{ $item->email }}</td>
+                                <td>{{ $item->nombre_padre }}</td>
+                                <td>{{ $item->nombre_madre }}</td>
+                                <td>{{ $item->comentario }}</td>
+                                <td>{{ $item->fecha_nacimiento }}</td>
+                               
                                 <td>
-                                    <form class="form-horizontal" action="{{url('api/lista/solicitantes')}}" method="post" data-toggle="validator">
-                                        <input type="text" value="{{$item->id}}" hidden="true" id="id" name="id">
-                                        <button class="btn btn-info" type="submit">Ver</button>
+                                    @if($llave == 0)
+                                    <form class="form-horizontal" action="{{url('api/selecionar/beneficiario')}}" method="post" data-toggle="validator">
+                                        <input type="text" value="{{$id_beca}}" hidden="true" id="id_beca" name="id_beca">
+                                        <input type="text" value="{{$item->id}}" hidden="true" id="id_solicitante" name="id_solicitante">
+                                        <button class="btn btn-primary" type="submit">Seleccionar</button>
                                     </form>
-                                </td>
-                                <td>
-                                    <form class="form-horizontal" action="{{url('api/finalizar/beca')}}" method="post" data-toggle="validator">
-                                        <input type="text" value="{{$item->id}}" hidden="true" id="id" name="id">
-                                        <button class="btn btn-warning" type="submit">Finalizar</button>
-                                    </form>
-                                </td>
-                                <td>
-                                    <form class="form-horizontal" action="{{url('api/eliminar/beca')}}" method="post" data-toggle="validator">
-                                        <input type="text" value="{{$item->id}}" hidden="true" id="id" name="id">
-                                        <button class="btn btn-danger" type="submit">Eliminar</button>
-                                    </form>
+                                    @else
+                                        <button class="btn btn-primary" type="submit" disabled="true">Seleccionar</button>
+                                    @endif
                                 </td>
                             </tr>
                             @php

@@ -19,4 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('lista/becas',						'BecaController@lista');
 Route::post('solicitar/beca',					'BecaController@solicitar');
 Route::post('crear/beca',						'BecaController@crear');
+Route::post('eliminar/beca',					'BecaController@eliminar');
+Route::post('finalizar/beca',					'BecaController@finalizar');
+Route::post('selecionar/beneficiario',			'BecaController@selecionar');
 Route::post('lista/solicitantes',				'BecaController@listaSolicitantes');
